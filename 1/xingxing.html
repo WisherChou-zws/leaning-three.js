@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body style="margin: 0; overflow: hidden;">
+  <div id="aaa"></div>
+  <div id="stats"></div>
+  <script src="../js/three.js"></script>
+  <script src="../js/jquery.js"></script>
+  <script src="../js/stats.js"=""></script>
+  <script src="../js/dat.gui.js"></script>
+  <script src="../js/asciieffect.js"></script>
+  <script>
+  $(function() {
+    let stats = initStats();
+    let scene = new THREE.Scene();
+    var fov = 100; //拍摄距离
+    var near = 0.01; //最小范围
+    var far = 10000; //最大范围
+    var camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, near, far);
+
+    let renderer = new THREE.WebGLRenderer();
+    renderer.setClearColor(0xeeeeee, 1.0);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+
+    let axes = new THREE.AxesHelper(200); //xyz:红绿蓝
+    scene.add(axes);
+
+    let planeGeometry = new THREE.PlaneGeometry(1000, 1000);
+    let planeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    let plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.receiveShadow = true;
+    plane.rotation.x = -0.5 * Math.PI;
+    plane.position.set(0, 0, 0)
+    scene.add(plane);
+
+    let sphereGeometry1 = new THREE.SphereGeometry(0.5, 20, 20);
+    let sphereMaterial1 = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    let sphere1 = new THREE.Mesh(sphereGeometry1, sphereMaterial1);
+    sphere1.castShadow = true;
+    sphere1.position.set(5, 100, 5)
+    scene.add(sphere1);
+
+    let sphereGeometry2 = new THREE.SphereGeometry(8, 20, 20);
+    let sphereMaterial2 = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    let sphere2 = new THREE.Mesh(sphereGeometry2, sphereMaterial2);
+    sphere2.castShadow = true;
+    sphere2.position.set(10.8, 100, 10.8)
+    scene.add(sphere2);
+
+    // let sphereGeometry3 = new THREE.SphereGeometry(10, 20, 20);
+    // let sphereMaterial3 = new THREE.MeshLambertMaterial({ color: 0xff00ff });
+    // let sphere3 = new THREE.Mesh(sphereGeometry3, sphereMaterial3);
+    // sphere3.castShadow = true;
+    // sphere3.position.set(15, 100, 15)
+    // scene.add(sphere3);
+
+    // let sphereGeometry4 = new THREE.SphereGeometry(1.5, 20, 20);
+    // let sphereMaterial4 = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    // let sphere4 = new THREE.Mesh(sphereGeometry4, sphereMaterial4);
+    // sphere4.castShadow = true;
+    // sphere4.position.set(22.8, 100, 22.8)
+    // scene.add(sphere4);
+
+    // let sphereGeometry5 = new THREE.SphereGeometry(13.13, 20, 20);  //  缩小100倍
+    // let sphereMaterial5 = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    // let sphere5 = new THREE.Mesh(sphereGeometry5, sphereMaterial5);
+    // sphere5.castShadow = true;
+    // sphere5.position.set(77.8, 100, 77.8)
+    // scene.add(sphere5);
+
+    // let sphereGeometry6 = new THREE.SphereGeometry(7.45, 50, 50);
+    // let sphereMaterial6 = new THREE.MeshLambertMaterial({ color: 0xffff00 });
+    // let sphere6 = new THREE.Mesh(sphereGeometry6, sphereMaterial6);
+    // sphere6.castShadow = true;
+    // sphere6.position.set(142, 100, 142)
+    // scene.add(sphere6);
+
+    // let sphereGeometry7 = new THREE.SphereGeometry(6.52, 20, 20);
+    // let sphereMaterial7 = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    // let sphere7 = new THREE.Mesh(sphereGeometry7, sphereMaterial7);
+    // sphere7.castShadow = true;
+    // sphere7.position.set(287, 100, 287)
+    // scene.add(sphere7);
+
+    // let sphereGeometry8 = new THREE.SphereGeometry(57.1, 100,100);
+    // let sphereMaterial8 = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    // let sphere8 = new THREE.Mesh(sphereGeometry8, sphereMaterial8);
+    // sphere8.castShadow = true;
+    // sphere8.position.set(450, 100, 450)
+    // scene.add(sphere8);
+
+    let directionalLight = new THREE.DirectionalLight(0xffffe6);
+    directionalLight.castShadow = true;
+    directionalLight.position.set(0, 200, 100);
+    directionalLight.distance = 100;
+    scene.add(directionalLight)
+
+    camera.position.set(10, 100, 10)
+    camera.lookAt(scene.position);
+    var controls = new function() {
+      this.bouncingSpeed = 0.001;
+    }
+    var gui = new dat.GUI();
+    gui.add(controls, 'bouncingSpeed', 0, 0.5)
+
+    //scene.fog=new THREE.Fog(0xffffff,7.15)
+
+    var effect = renderer;
+    // var effect=new THREE.AsciiEffect(renderer);
+    // effect.setSize(window.innerWidth,window.innerHeight);
+
+    $('#aaa').append(effect.domElement);
+    renderScene();
+
+    var step = 0;
+
+    function renderScene() {
+      stats.update();
+      step += controls.bouncingSpeed;
+      sphere1.position.x += Math.cos(step * 0.23);
+      sphere1.position.z += Math.sin(step * 0.23);
+
+      sphere2.position.x += Math.cos(step * 0.61);
+      sphere2.position.z += Math.sin(step * 0.61);
+
+      // sphere3.position.x = Math.cos(step);
+      // sphere3.position.z = Math.sin(step);
+
+      // sphere4.position.x = Math.cos(step *1.9);
+      // sphere4.position.z = Math.sin(step *1.9);
+
+      // sphere5.position.x = Math.cos(step *11.8);
+      // sphere5.position.z = Math.sin(step *11.8);
+
+      // sphere6.position.x = Math.cos(step *29.5);
+      // sphere6.position.z = Math.sin(step *29.5);
+
+      // sphere7.position.x = Math.cos(step *84);
+      // sphere7.position.z = Math.sin(step *84);
+
+      // sphere8.position.x = Math.cos(step *164.8);
+      // sphere8.position.z = Math.sin(step *164.8);
+
+      requestAnimationFrame(renderScene);
+      effect.render(scene, camera);
+    }
+
+    function initStats() {
+      let stats = new Stats();
+      stats.setMode(0);
+      stats.domElement.style.position = 'absolute';
+      stats.domElement.style.left = '0px';
+      stats.domElement.style.top = '0px';
+      $('#stats').append(stats.domElement);
+      return stats;
+    }
+
+    document.getElementById('aaa').addEventListener('mousewheel', mousewheel, false);
+    //鼠标滑轮
+    function mousewheel(e) {
+      e.preventDefault();
+      //e.stopPropagation();
+      if (e.wheelDelta) { //判断浏览器IE，谷歌滑轮事件
+        if (e.wheelDelta > 0) { //当滑轮向上滚动时
+          fov -= (near < fov ? 1 : 0);
+        }
+        if (e.wheelDelta < 0) { //当滑轮向下滚动时
+          fov += (fov < far ? 1 : 0);
+        }
+      } else if (e.detail) { //Firefox滑轮事件
+        if (e.detail > 0) { //当滑轮向上滚动时
+          fov -= 1;
+        }
+        if (e.detail < 0) { //当滑轮向下滚动时
+          fov += 1;
+        }
+      }
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+      renderer.render(scene, camera);
+      //updateinfo();
+    }
+
+
+  })
+  </script>
+</body>
+
+</html>
